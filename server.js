@@ -28,6 +28,6 @@ app.use('/api/user', userRoutes)
 app.use('/api/meeting', meetingRoutes)
 
 const PORT = process.env.PORT || 5000;
-app.listen(port, ()=>{
-    console.log("server running" + port)
+app.listen(PORT, ()=>{
+    console.log("server running " + PORT)
 })
