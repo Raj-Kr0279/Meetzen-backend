@@ -10,6 +10,8 @@ const userSchema = new mongoose.Schema({
     userImage: {
         type: String,
         default: "/images/profile/john-doe.jpg"
-    }
+    },
+    timezone: {type:String,},
+    language: {type:String}
 })
 module.exports = mongoose.model('user', userSchema);

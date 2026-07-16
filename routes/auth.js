@@ -1,15 +1,9 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
-const bcrypt = require("bcryptjs")
-const express = require("express")
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
 
-router.post('/register', async (req, res)=>{
-   
+const authController = require("../controller/authController");
 
-})
+router.post("/register", authController.register);
+router.post("/login", authController.login);
 
-router.post('/login', async (req, res)=>{
-
-})
-module.exports = router
+module.exports = router;

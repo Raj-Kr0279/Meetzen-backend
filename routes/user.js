@@ -1,8 +1,7 @@
-const { addUser, login } = require('../controller/userController')
-const User = require('../models/User')
-const express = require("express")
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
 
-router.post('/add-user', addUser)
-router.post('/login', login) 
-module.exports = router
+// Login/Register routes ko auth routes me move kiya gaya hai.
+// /api/user ke under only authenticated user actions rakhne chahiye.
+
+module.exports = router;
