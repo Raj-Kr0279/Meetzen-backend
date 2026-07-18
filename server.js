@@ -9,7 +9,8 @@ const userRoutes = require("./routes/user")
 const meetingRoutes = require("./routes/meeting")
 
 const cookieParser = require("cookie-parser")
-const { rateLimit } = require("express-rate-limit")
+const { rateLimit } = require("express-rate-limit");
+const auth = require("./middleware/auth");
 
 const app = express();
 
@@ -62,7 +63,7 @@ app.use("/api/auth", authLimiter, authRoutes)
 // Extra protection for login on /api/user/login
 const userLoginLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
-  limit: 25, // 5 attempts per IP
+  limit: 200, // 5 attempts per IP
   standardHeaders: true,
   legacyHeaders: false,
   statusCode: 429,

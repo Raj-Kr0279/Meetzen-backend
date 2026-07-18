@@ -33,10 +33,10 @@ exports.register = async (req, res) => {
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRY,
     });
-
+    const { password:_, ...userData } = newUser.toObject();
     return res.status(201).json({
       success: true,
-      user: newUser,
+      user: userData,
       token,
     });
   } catch (error) {
@@ -66,7 +66,7 @@ exports.login = async (req, res) => {
   const { email, password, companyId } = req.body;
 
   try {
-    const isUserExists = await User.findOne({ email });
+    const isUserExists = await User.findOne({ email }).select("+password");
 
     if (!isUserExists) {
       return res.status(401).json({ message: "User not registered. contact your organisation" });
@@ -85,14 +85,37 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ id: isUserExists._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRY,
     });
-
+    const { password:_, ...userData } = isUserExists.toObject();
     return res.status(200).json({
       success: true,
-      user: isUserExists,
+      user: userData,
       token,
     });
   } catch (error) {
     return res.status(500).json({ error: error?.message || error });
+  }
+};
+
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
 };
 
