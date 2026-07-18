@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     phone: { type: Number, required: true },
     bio: { type: String, required: false },
-    password:{type:String, required:true},
+    password:{type:String, required:true,select:false},
     userImage: {
         type: String,
         default: "/images/profile/john-doe.jpg"
