@@ -1,6 +1,11 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken")
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const uploads = multer({ dest: "uploads/" });
+const { supabase } = require("../config/supabase.js");
 
 exports.addUser = async (req, res) => {
     try {
@@ -15,10 +20,10 @@ exports.addUser = async (req, res) => {
         const newUser = await user.save()
         const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY })
         res.status(201).json({
-    success: true,
-    user: newUser,
-    token
-})
+            success: true,
+            user: newUser,
+            token
+        })
     }
     catch (error) {
         console.error(error);
@@ -54,29 +59,79 @@ exports.addUser = async (req, res) => {
         });
     }
 }
-exports.login = async (req, res) => {
-    const { email, password, companyId } = req.body;
+
+exports.updateUser = async (req, res) => {
     try {
-        const isUserExists = await User.findOne({ email: email })
-        if (isUserExists) {
-            if (isUserExists.companyId === companyId) {
-                const isMatch = await bcrypt.compare(password, isUserExists.password)
-                console.log(isMatch, "ismatching");
-                if (isMatch) {
-                    return res.status(200).json(isUserExists)
-                }
-                return res.status(401).json({ message: "password incorrect" })
-            }
-            return res.status(401).json({ message: "please select correct company" })
+        const { id } = req.params;
+
+        const {
+            name,
+            phone,
+            bio,
+            language,
+            timezone,
+        } = req.body;
+
+        const user = await User.findById(id);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
         }
-        return res.status(401).json({ message: "User not registered. contact your organisation" })
 
+        user.name = name || user.name;
+        user.phone = phone || user.phone;
+        user.bio = bio || user.bio;
+        user.language = language || user.language;
+        user.timezone = timezone || user.timezone;
 
+        // Update profile image
+        if (req.file) {
 
+            // delete old image
+            // if (user.userImage) {
+            //     const oldPath = path.join(__dirname, "..", user.userImage);
 
+            //     if (fs.existsSync(oldPath)) {
+            //         fs.unlinkSync(oldPath);
+            //     }
+            // }
 
+            // user.userImage = req.file.path.replace(/\\/g, "/");
+            const fileName = `users/${Date.now()}-${req.file.originalname}`;
+
+            const { error } = await supabase.storage
+                .from("profile-images")
+                .upload(fileName, req.file.buffer, {
+                    contentType: req.file.mimetype,
+                    upsert: true,
+                });
+
+            if (error) throw error;
+
+            const { data } = supabase.storage
+                .from("profile-images")
+                .getPublicUrl(fileName);
+
+            user.userImage = data.publicUrl;
+        }
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Profile updated successfully",
+            user,
+        });
+
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
     }
-    catch (error) {
-        res.status(500).json({ error: error })
-    }
-}
+};
