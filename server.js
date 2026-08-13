@@ -11,9 +11,8 @@ const meetingRoutes = require("./routes/meeting")
 const cookieParser = require("cookie-parser")
 const { rateLimit } = require("express-rate-limit");
 const auth = require("./middleware/auth");
-
 const app = express();
-
+app.use("/uploads", express.static("uploads"));
 app.set("trust proxy", 1);
 
 app.use(cors({
